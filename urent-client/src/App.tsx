@@ -1,0 +1,94 @@
+import {
+  Navigate,
+  Route,
+  Routes,
+  useNavigate,
+  useParams,
+} from "react-router-dom";
+import { HomePage } from "./features/home/pages/HomePage";
+import { InventoryPage } from "./features/inventory/pages/InventoryPage";
+import { OrderDetailPage } from "./features/orders/pages/OrderDetailPage";
+import { OrdersPage } from "./features/orders/pages/OrdersPage";
+import { MessagesPage } from "./features/messages/pages/MessagesPage";
+import { NotificationsPage } from "./features/notifications/pages/NotificationsPage";
+import { SettingsPage } from "./features/settings/pages/SettingsPage";
+import { ProfilePage } from "./features/profile/pages/ProfilePage";
+import { ProductDetailPage } from "./features/product/pages/ProductDetailPage";
+import { AppShell } from "./features/layout/components/AppShell";
+import { ProtectedRoute } from "./features/auth/components/ProtectedRoute";
+import { PublicOnlyRoute } from "./features/auth/components/PublicOnlyRoute";
+import { ForgotPasswordPage } from "./features/auth/pages/ForgotPasswordPage";
+import { LoginPage } from "./features/auth/pages/LoginPage";
+import { RegisterPage } from "./features/auth/pages/RegisterPage";
+import { ResetPasswordPage } from "./features/auth/pages/ResetPasswordPage";
+import { VerifyOtpPage } from "./features/auth/pages/VerifyOtpPage";
+import { APP_ROUTES } from "./features/auth/constants";
+import { NAV_PATHS } from "./features/layout/constants/navItems";
+
+function ProductRoute() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const parsedId = Number(id);
+  const safeId = Number.isFinite(parsedId) && parsedId > 0 ? parsedId : 1;
+
+  return (
+    <ProductDetailPage
+      productId={safeId}
+      onBack={() => navigate(APP_ROUTES.home)}
+    />
+  );
+}
+
+export default function App() {
+  const navigate = useNavigate();
+  const handleProductClick = (id: number) => {
+    navigate(`/product/${id}`);
+  };
+
+  return (
+    <Routes>
+      <Route element={<PublicOnlyRoute />}>
+        <Route path={APP_ROUTES.login} element={<LoginPage />} />
+        <Route path={APP_ROUTES.register} element={<RegisterPage />} />
+        <Route path={APP_ROUTES.authOtp} element={<VerifyOtpPage />} />
+        <Route
+          path={APP_ROUTES.forgotPassword}
+          element={<ForgotPasswordPage />}
+        />
+        <Route
+          path={APP_ROUTES.resetPassword}
+          element={<ResetPasswordPage />}
+        />
+      </Route>
+
+      <Route element={<ProtectedRoute />}>
+        <Route element={<AppShell />}>
+          <Route
+            path={APP_ROUTES.home}
+            element={<HomePage onProductClick={handleProductClick} />}
+          />
+          <Route path={NAV_PATHS.orders} element={<OrdersPage />} />
+          <Route
+            path={`${NAV_PATHS.orders}/:orderId`}
+            element={<OrderDetailPage />}
+          />
+          <Route path={NAV_PATHS.inventory} element={<InventoryPage />} />
+          <Route path={NAV_PATHS.messages} element={<MessagesPage />} />
+          <Route
+            path={`${NAV_PATHS.messages}/:id`}
+            element={<MessagesPage />}
+          />
+          <Route
+            path={NAV_PATHS.notifications}
+            element={<NotificationsPage />}
+          />
+          <Route path={NAV_PATHS.settings} element={<SettingsPage />} />
+          <Route path={APP_ROUTES.profile} element={<ProfilePage />} />
+          <Route path="/product/:id" element={<ProductRoute />} />
+        </Route>
+      </Route>
+
+      <Route path="*" element={<Navigate to={APP_ROUTES.home} replace />} />
+    </Routes>
+  );
+}
